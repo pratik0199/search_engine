@@ -571,6 +571,10 @@ div[data-testid="stAlert"] {
 """, unsafe_allow_html=True)
 
 
+# ── Session state — keep folder path across all reruns ────────
+if "folder" not in st.session_state:
+    st.session_state["folder"] = DEFAULT_FOLDER
+
 # ══════════════════════════════════════════════════════════════
 # SIDEBAR
 # ══════════════════════════════════════════════════════════════
@@ -593,23 +597,41 @@ with st.sidebar:
 
     # Setup
     st.markdown('<div class="sidebar-heading">Data Source</div>', unsafe_allow_html=True)
+
     folder = st.text_input(
-        "Reports folder path",
-        value=DEFAULT_FOLDER,
-        label_visibility="collapsed",
-        placeholder="Folder path..."
+        "Shift reports folder path",
+        value=st.session_state["folder"],
+        placeholder=r"e.g.  C:\Users\psonawane\Documents\shift_report",
+        help="Paste the full Windows path to the folder containing your .docx files.",
     )
-    st.caption(f"Folder path: {folder}")
+
+    # Persist any change immediately
+    st.session_state["folder"] = folder
+
+    # Live folder validation feedback
+    if folder:
+        if os.path.isdir(folder):
+            found = (glob.glob(os.path.join(folder, "*.docx")) +
+                     glob.glob(os.path.join(folder, "*.DOCX")))
+            if found:
+                st.success(f"{len(found)} .docx file(s) detected in folder")
+            else:
+                st.warning("Folder found — no .docx files inside yet")
+        else:
+            st.error("Folder path not found. Check spelling and try again.")
 
     if st.button("Build / Rebuild Database"):
-        with st.spinner("Indexing shift reports..."):
-            n, stats = build_db(folder)
-        if n:
-            st.success(f"{n:,} sentences indexed across {len(stats)} file(s)")
-            for s in stats: st.caption(s)
-            st.cache_data.clear()
+        if not os.path.isdir(folder):
+            st.error("Cannot build — folder path does not exist.")
         else:
-            st.error("No .docx files found in the specified folder.")
+            with st.spinner("Reading and indexing all .docx files..."):
+                n, stats = build_db(folder)
+            if n:
+                st.success(f"{n:,} sentences indexed from {len(stats)} file(s)")
+                for s in stats:
+                    st.caption(s)
+            else:
+                st.error("No .docx files found. Check the folder path.")
 
     st.markdown('<hr class="divider">', unsafe_allow_html=True)
 
@@ -655,7 +677,8 @@ st.markdown("""
 
 # ── Stat cards ──────────────────────────────────────────────
 n_db    = db_count()
-n_files = len(glob.glob(os.path.join(folder, "*.docx"))) if os.path.exists(folder) else 0
+_af = st.session_state.get("folder", DEFAULT_FOLDER)
+n_files = len(glob.glob(os.path.join(_af, "*.docx")) + glob.glob(os.path.join(_af, "*.DOCX"))) if os.path.isdir(_af) else 0
 db_ok   = db_exists()
 
 st.markdown(f"""
@@ -677,7 +700,7 @@ st.markdown(f"""
 
 # ── Database warning ─────────────────────────────────────────
 if not db_ok:
-    st.warning("Database not initialised. Set the folder path in the sidebar and click Build / Rebuild Database.")
+    st.warning("Database not built yet. Paste your folder path in the sidebar and click Build / Rebuild Database.")
 
 # ── Search bar ───────────────────────────────────────────────
 st.markdown('<div class="search-label">Search Query</div>', unsafe_allow_html=True)
