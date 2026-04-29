@@ -148,7 +148,7 @@ def is_cw(n):
 PUMP_ALL_EVENTS = [
     "seal_failure", "low_level", "pump_swap", "startup", "shutdown",
     "trip_fault", "low_pressure", "oil_lubrication", "steam_issue",
-    "strainer_clean", "maintenance_pm",
+    "strainer_clean"
 ]
 # For pump, ALL events are shown everywhere (maintenance_pm included in Overall/Monthly too)
 PUMP_EVENTS_FULL_SET = PUMP_ALL_EVENTS
