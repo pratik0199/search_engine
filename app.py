@@ -259,7 +259,7 @@ NONCW_COLOR = "#d97706"
 SHIFT_COLORS = {"Day":"#0d9488","Night":"#475569"}
 PLOT_BG  = "#f8fafc"
 GRID_CLR = "#cbd5e1"
-FIGSIZE  = (6, 3)
+FIGSIZE  = (6.5, 3)
 BAR_W    = 0.50
 
 def make_colors(events, cmap):
