@@ -24,23 +24,23 @@ div[data-testid="column"] { padding: 0 3px !important; }
 
 /* ── NAV BUTTONS — fixed width, centered ── */
 div.stButton > button {
-    width: 100%;
+    width: 200%;
     border-radius: 4px;
-    height: 34px !important;
+    height: 30px !important;
     min-height: 34px !important;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 18px;
     background-color: #1e293b;
     border: 1px solid #334155;
     color: white !important;
     padding: 0 6px !important;
-    line-height: 1 !important;
+    line-height: 3 !important;
     white-space: nowrap;
 }
 div.stButton > button p,
 div.stButton > button span,
 div.stButton > button div {
-    color: white !important; font-weight: 700 !important; font-size: 13px !important;
+    color: white !important; font-weight: 500 !important; font-size: 13px !important;
 }
 div.stButton > button:hover { background-color: #0f172a; }
 /* active state flash */
@@ -87,7 +87,7 @@ div[data-testid="stSelectbox"] label {
 .bif-compact div[data-baseweb="select"] svg { width: 14px !important; height: 14px !important; }
 
 /* ── KPI CARDS ── */
-.kpi-row { display:flex; gap:6px; margin-bottom:0px; margin-top:0px; }
+.kpi-row { display:flex; gap:30px; margin-bottom:0px; margin-top:0px; }
 .kpi-card {
     flex:1; background:#f8fafc; border:1.5px solid #1e293b; border-left:3px solid #1e293b;
     border-radius:5px; padding:4px 8px 3px 8px; min-width:0;
@@ -118,7 +118,7 @@ div[data-testid="stSelectbox"] label {
 /* ── TITLE — bigger, tight spacing ── */
 .dash-title {
     text-align:center; color:#1e293b; font-family:"Times New Roman",serif;
-    font-size:28px; font-weight:700; margin:2px 0 3px 0; padding:0;
+    font-size:30px; font-weight:700; margin:2px 0 3px 0; padding:0;
 }
 
 hr { margin:0px 0 1px 0 !important; border-color:#94a3b8; }
@@ -219,8 +219,8 @@ def is_cw(n):
 # EVENT DEFINITIONS
 # ─────────────────────────────────────────────────
 PUMP_ALL_EVENTS = [
-    "seal_failure","low_level","pump_swap","startup","shutdown",
-    "trip_fault","low_pressure","oil_lubrication","steam_issue","strainer_clean",
+    "seal_failure","low_level",
+    "trip_fault","low_pressure","steam_issue","strainer_clean",
 ]
 PUMP_EVENTS_FULL_SET = PUMP_ALL_EVENTS
 
@@ -229,7 +229,7 @@ EXCH_ALL_EVENTS = [
     "tube_installed","tube_cleaning","hydroblast_cleaning",
     "installing_plates","gasket_installed","pressure_test",
     "temp_cooler_replace","transmitter_blowdown","drained_oil",
-    "bypass_isolation","sv_repair_replacement","steam_issue",
+    "sv_repair_replacement","steam_issue",
     "n2_purging","dew_point_check","install_heater",
     "capital_project","cleaning","work_completed",
 ]
@@ -237,7 +237,7 @@ EXCH_EVENTS_FULL_SET = EXCH_ALL_EVENTS + ["maintenance"]
 
 PUMP_COLORS_MAP = {
     "seal_failure":"#2563eb","low_level":"#6366f1","pump_swap":"#d97706",
-    "startup":"#059669","shutdown":"#64748b","trip_fault":"#7c3aed",
+    "startup":"#059669","shutdown":"#64748b","trip_fault":"#be185d",
     "low_pressure":"#0891b2","oil_lubrication":"#be185d","steam_issue":"#ea580c",
     "strainer_clean":"#65a30d","maintenance_pm":"#78350f",
 }
@@ -259,7 +259,7 @@ NONCW_COLOR = "#d97706"
 SHIFT_COLORS = {"Day":"#0d9488","Night":"#475569"}
 PLOT_BG  = "#f8fafc"
 GRID_CLR = "#cbd5e1"
-FIGSIZE  = (6.7, 3)
+FIGSIZE  = (6.5, 2.8)
 BAR_W    = 0.50
 
 def make_colors(events, cmap):
