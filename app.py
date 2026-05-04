@@ -107,7 +107,7 @@ div[data-testid="stSelectbox"] label {
     padding:2px 4px 1px 4px; background:#f8fafc; margin-bottom:3px;
 }
 .plot-title {
-    font-size:11px; font-weight:700; color:#1e293b; margin-bottom:0px;
+    font-size:13px; font-weight:700; color:#1e293b; margin-bottom:0px;
     font-family:"Times New Roman",serif; text-align:center; line-height:1.3;
 }
 .no-data-msg {
