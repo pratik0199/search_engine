@@ -93,9 +93,9 @@ div[data-testid="stSelectbox"] label {
     border-radius:5px; padding:4px 8px 3px 8px; min-width:0;
     font-family:"Times New Roman",serif; text-align:center;
 }
-.kpi-label { font-size:8px; font-weight:900; color:#1e293b; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:1px; }
+.kpi-label { font-size:10px; font-weight:900; color:#1e293b; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:1px; }
 .kpi-value { font-size:15px; font-weight:700; color:#1e293b; line-height:1.1; font-family:"Times New Roman",serif; }
-.kpi-sub   { font-size:8px; font-weight:700; color:#334155; margin-top:1px; font-family:"Times New Roman",serif; }
+.kpi-sub   { font-size:10px; font-weight:700; color:#334155; margin-top:1px; font-family:"Times New Roman",serif; }
 .kpi-card.c1{border-left-color:#2563eb;} .kpi-card.c1 .kpi-value{color:#2563eb;}
 .kpi-card.c2{border-left-color:#65a30d;} .kpi-card.c2 .kpi-value{color:#65a30d;}
 .kpi-card.c3{border-left-color:#d97706;} .kpi-card.c3 .kpi-value{color:#d97706;}
@@ -118,7 +118,7 @@ div[data-testid="stSelectbox"] label {
 /* ── TITLE — bigger, tight spacing ── */
 .dash-title {
     text-align:center; color:#1e293b; font-family:"Times New Roman",serif;
-    font-size:30px; font-weight:700; margin:2px 0 3px 0; padding:0;
+    font-size:28px; font-weight:700; margin:2px 0 3px 0; padding:0;
 }
 
 hr { margin:0px 0 1px 0 !important; border-color:#94a3b8; }
