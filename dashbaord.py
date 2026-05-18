@@ -225,6 +225,8 @@ def is_cw(n):
 # ─────────────────────────────────────────────────
 DEDUP_GAP_SHIFTS = 3
 
+# Dedup lists must exactly match the display event lists so episode counts
+# and raw flag counts are always consistent with what the charts show.
 EXCH_DEDUP_EVENTS = [
     "tube_leak","tube_plug","tube_repair","tube_bundle_replace",
     "tube_installed","tube_cleaning","hydroblast_cleaning",
@@ -234,9 +236,8 @@ EXCH_DEDUP_EVENTS = [
     "install_heater","capital_project","cleaning","work_completed",
 ]
 PUMP_DEDUP_EVENTS = [
-    "seal_failure","low_level","pump_swap","startup","shutdown",
-    "trip_fault","low_pressure","oil_lubrication","steam_issue",
-    "strainer_clean","maintenance_pm","vibration",
+    "seal_failure","low_level",
+    "trip_fault","low_pressure","steam_issue","strainer_clean",
 ]
 
 def _shift_ord(df):
@@ -294,12 +295,15 @@ def extract_episodes(df, eq_col, events, gap=DEDUP_GAP_SHIFTS):
 
 # ─────────────────────────────────────────────────
 # EVENT DEFINITIONS
+# Single source of truth: PUMP_ALL_EVENTS and EXCH_ALL_EVENTS are the ONLY
+# events used everywhere — charts, donut, KPI, episode log, equipment history.
+# EVENTS_FULL == ALL_EVENTS (no extra hidden columns in the data).
 # ─────────────────────────────────────────────────
 PUMP_ALL_EVENTS = [
     "seal_failure","low_level",
     "trip_fault","low_pressure","steam_issue","strainer_clean",
 ]
-PUMP_EVENTS_FULL_SET = PUMP_ALL_EVENTS
+PUMP_EVENTS_FULL_SET = PUMP_ALL_EVENTS   # identical — kept for naming consistency
 
 EXCH_ALL_EVENTS = [
     "tube_leak","tube_plug","tube_repair","tube_bundle_replace",
@@ -310,7 +314,7 @@ EXCH_ALL_EVENTS = [
     "n2_purging","dew_point_check","install_heater",
     "capital_project","cleaning","work_completed",
 ]
-EXCH_EVENTS_FULL_SET = EXCH_ALL_EVENTS + ["maintenance"]
+EXCH_EVENTS_FULL_SET = EXCH_ALL_EVENTS   # identical — kept for naming consistency
 
 # Canonical color maps — used consistently across ALL tabs/charts
 PUMP_COLORS_MAP = {
@@ -358,8 +362,8 @@ def load_pump():
     df["shift"]    = df["shift"].str.strip().replace({"Days":"Day","Nights":"Night"})
     df["month_dt"] = df["date"].dt.to_period("M").dt.to_timestamp()
     df["month"]    = df["month_dt"].dt.strftime("%B-%Y")
-    for c in PUMP_EVENTS_FULL_SET + ["maintenance_pm","pump_swap","startup","shutdown",
-                                      "oil_lubrication","vibration"]:
+    # Only initialise the exact events defined in PUMP_ALL_EVENTS — nothing else
+    for c in PUMP_ALL_EVENTS:
         if c not in df.columns: df[c] = 0
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
     return df
@@ -374,7 +378,8 @@ def load_exchanger():
     df["month_dt"] = df["date"].dt.to_period("M").dt.to_timestamp()
     df["month"]    = df["month_dt"].dt.strftime("%B-%Y")
     df["is_cw"]    = df["exchanger"].apply(is_cw)
-    for c in EXCH_EVENTS_FULL_SET:
+    # Only initialise the exact events defined in EXCH_ALL_EVENTS — nothing else
+    for c in EXCH_ALL_EVENTS:
         if c not in df.columns: df[c] = 0
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
     return df
@@ -523,67 +528,58 @@ def plot_donut(title, raw_series, all_colors,
 
 
 # ─────────────────────────────────────────────────
-# KPI CARDS  ── now episode-based
+# KPI CARDS  ── raw flag counts, identical source to bar charts & donut
 #
-# Logic:
-#   • Total Episodes   = total deduplicated episodes across all event types
-#   • Avg / Month      = total episodes ÷ number of distinct months in data
-#   • Peak Month       = month with the most episode *start dates*
-#   • Top Event        = event type with the most episodes (not raw flag counts)
+# All four numbers are derived from df[EVENTS].sum() so they always agree
+# with what the charts display.  No episode-based counts here.
 # ─────────────────────────────────────────────────
-def render_kpi(episodes_df, months_labels):
+def render_kpi(df, events, months_labels):
     """
-    episodes_df : output of load_pump_episodes() or load_exchanger_episodes()
-                  columns: Equipment, Event, Start Date, Start Shift,
-                           End Date, End Shift, Shifts Open, Days Open
-    months_labels : ordered list of "Month-YYYY" strings present in the raw df
+    df            : active dataframe (pump_df or exch_df, already filtered to EVENTS cols)
+    events        : list of snake_case event column names (EVENTS)
+    months_labels : ordered list of "Month-YYYY" strings
     """
-    if episodes_df.empty:
-        total_ep  = 0
-        avg_pm    = 0.0
-        peak_mon  = "—"
-        peak_val  = 0
-        top_ev    = "—"
-        top_ev_c  = 0
-    else:
-        total_ep   = len(episodes_df)
-        total_mon  = len(months_labels)
-        avg_pm     = round(total_ep / max(total_mon, 1), 1)
+    ev_cols = [e for e in events if e in df.columns]
 
-        # Peak month: parse Start Date → month label, count episodes per month
-        ep_copy = episodes_df.copy()
-        ep_copy["_start_dt"]  = pd.to_datetime(ep_copy["Start Date"], format="%d-%b-%Y", errors="coerce")
-        ep_copy["_month_lbl"] = ep_copy["_start_dt"].dt.strftime("%B-%Y")
-        ep_by_mon = ep_copy["_month_lbl"].value_counts()
-        peak_mon  = ep_by_mon.idxmax() if not ep_by_mon.empty else "—"
-        peak_val  = int(ep_by_mon.max())  if not ep_by_mon.empty else 0
+    total_ev  = int(df[ev_cols].sum().sum())
+    total_mon = len(months_labels)
+    avg_pm    = round(total_ev / max(total_mon, 1), 1)
 
-        # Top event: episode count per event type
-        ev_counts = episodes_df["Event"].value_counts()
-        top_ev    = ev_counts.index[0] if not ev_counts.empty else "—"
-        top_ev_c  = int(ev_counts.iloc[0]) if not ev_counts.empty else 0
+    # Peak month = month with highest total raw event flags
+    ev_by_mon = (
+        df.groupby("month")[ev_cols].sum()
+        .reindex(months_labels).fillna(0)
+        .sum(axis=1)
+    )
+    peak_mon = ev_by_mon.idxmax() if not ev_by_mon.empty and ev_by_mon.max() > 0 else "—"
+    peak_val = int(ev_by_mon.max()) if not ev_by_mon.empty else 0
+
+    # Top event = event column with highest raw flag total
+    ev_totals = df[ev_cols].sum().sort_values(ascending=False)
+    top_ev    = ev_totals.index[0].replace("_", " ").title() if len(ev_totals) > 0 else "—"
+    top_ev_c  = int(ev_totals.iloc[0]) if len(ev_totals) > 0 else 0
 
     st.markdown(f"""
     <div class="kpi-row">
       <div class="kpi-card c1">
-        <div class="kpi-label">Total Episodes</div>
-        <div class="kpi-value">{total_ep:,}</div>
-        <div class="kpi-sub">Deduplicated across all events</div>
+        <div class="kpi-label">Total Events</div>
+        <div class="kpi-value">{total_ev:,}</div>
+        <div class="kpi-sub">All periods combined</div>
       </div>
       <div class="kpi-card c2">
-        <div class="kpi-label">Avg Episodes / Month</div>
+        <div class="kpi-label">Avg / Month</div>
         <div class="kpi-value">{avg_pm}</div>
-        <div class="kpi-sub">Across {len(months_labels)} months</div>
+        <div class="kpi-sub">Across {total_mon} months</div>
       </div>
       <div class="kpi-card c3">
         <div class="kpi-label">Peak Month</div>
         <div class="kpi-value" style="font-size:9px;padding-top:1px;">{peak_mon}</div>
-        <div class="kpi-sub">{peak_val} episodes started</div>
+        <div class="kpi-sub">{peak_val} events recorded</div>
       </div>
       <div class="kpi-card c4">
         <div class="kpi-label">Top Event</div>
         <div class="kpi-value" style="font-size:9px;padding-top:1px;">{top_ev}</div>
-        <div class="kpi-sub">{top_ev_c} episodes</div>
+        <div class="kpi-sub">{top_ev_c} occurrences</div>
       </div>
     </div>""", unsafe_allow_html=True)
 
@@ -693,29 +689,27 @@ st.markdown("<hr>", unsafe_allow_html=True)
 # ─────────────────────────────────────────────────
 if equip == "Pump":
     df = pump_df.copy(); eq_col="pump"; info_col="pump_info"
-    EVENTS      = [e for e in PUMP_ALL_EVENTS    if e in df.columns]
-    EVENTS_FULL = [e for e in PUMP_EVENTS_FULL_SET+["maintenance_pm"] if e in df.columns]
-    COLORS      = make_colors(EVENTS,      PUMP_COLORS_MAP)
-    COLORS_FULL = make_colors(EVENTS_FULL, PUMP_COLORS_MAP)
+    EVENTS      = [e for e in PUMP_ALL_EVENTS if e in df.columns]
+    EVENTS_FULL = EVENTS   # same list — no hidden extras
+    COLORS      = make_colors(EVENTS, PUMP_COLORS_MAP)
+    COLORS_FULL = COLORS
     ALL_EV_LIST = PUMP_DEDUP_EVENTS
     COLORS_MAP  = PUMP_COLORS_MAP
-    episodes_df = load_pump_episodes()
 else:
     df = exch_df.copy(); eq_col="exchanger"; info_col="exchanger_info"
-    EVENTS      = [e for e in EXCH_ALL_EVENTS    if e in df.columns]
-    EVENTS_FULL = [e for e in EXCH_EVENTS_FULL_SET if e in df.columns]
-    COLORS      = make_colors(EVENTS,      EXCH_COLORS_MAP)
-    COLORS_FULL = make_colors(EVENTS_FULL, EXCH_COLORS_MAP)
+    EVENTS      = [e for e in EXCH_ALL_EVENTS if e in df.columns]
+    EVENTS_FULL = EVENTS   # same list — no hidden extras
+    COLORS      = make_colors(EVENTS, EXCH_COLORS_MAP)
+    COLORS_FULL = COLORS
     ALL_EV_LIST = EXCH_DEDUP_EVENTS
     COLORS_MAP  = EXCH_COLORS_MAP
-    episodes_df = load_exchanger_episodes()
 
 months_sorted = sorted(df["month_dt"].dropna().unique())
 months_labels = [pd.to_datetime(m).strftime("%B-%Y") for m in months_sorted]
 x = np.arange(len(months_labels))
 
-# ── KPI cards now use deduplicated episode counts ──
-render_kpi(episodes_df, months_labels)
+# KPI uses raw flag sums — identical source to bar charts and donut
+render_kpi(df, EVENTS, months_labels)
 
 
 # ══════════════════════════════════════════════════
@@ -946,26 +940,16 @@ elif page == "Equipment":
     with col1:
         st.markdown('<div class="plot-box"><div class="plot-title">Equipment History</div>',
                     unsafe_allow_html=True)
-        # Build history with Days Open from episodes
-        hist = eq_df[["date","shift",info_col]].sort_values("date").copy()
-        hist.columns = ["Date","Shift","Event Info"]
+        hist = eq_df[["date", info_col]].sort_values("date").copy()
+        hist.columns = ["Date", "Event Info"]
         if hist.empty:
             st.markdown('<div class="no-data-msg">No data available</div>', unsafe_allow_html=True)
         else:
-            # Load episodes for this equipment and join Days Open
-            ep_all = load_pump_episodes() if equip == "Pump" else load_exchanger_episodes()
-            ep_eq  = ep_all[ep_all["Equipment"] == selected_eq][["Start Date","Event","Days Open"]].copy()
-            ep_eq  = ep_eq.rename(columns={"Start Date":"Date","Event":"Event Info"})
-            # Merge on Date (formatted) and Event Info
-            hist["Date_str"] = hist["Date"].dt.strftime("%d-%b-%Y")
-            hist_merged = hist.merge(
-                ep_eq.rename(columns={"Date":"Date_str"}),
-                on=["Date_str","Event Info"], how="left"
-            )
-            # Keep only Days Open column alongside date and info
-            display_hist = hist_merged[["Date","Event Info","Days Open"]].copy()
-            display_hist["Date"] = display_hist["Date"].dt.strftime("%d-%b-%Y")
-            st.dataframe(display_hist, use_container_width=True, height=260)
+            hist["Date"] = hist["Date"].dt.strftime("%d-%b-%Y")
+            # Only keep rows where at least one display event is flagged
+            ev_mask = eq_df[EVENTS].sum(axis=1) > 0
+            hist = hist[ev_mask.values].reset_index(drop=True)
+            st.dataframe(hist, use_container_width=True, height=260)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
