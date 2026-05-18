@@ -3,6 +3,7 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from matplotlib.lines import Line2D
 
 st.set_page_config(layout="wide")
 
@@ -26,15 +27,15 @@ div[data-testid="column"] { padding: 0 3px !important; }
 div.stButton > button {
     width: 200%;
     border-radius: 4px;
-    height: 30px !important;
-    min-height: 34px !important;
+    height: 26px !important;
+    min-height: 28px !important;
     font-weight: 700;
     font-size: 18px;
     background-color: #1e293b;
     border: 1px solid #334155;
     color: white !important;
     padding: 0 6px !important;
-    line-height: 3 !important;
+    line-height: 1 !important;
     white-space: nowrap;
 }
 div.stButton > button p,
@@ -43,7 +44,6 @@ div.stButton > button div {
     color: white !important; font-weight: 500 !important; font-size: 13px !important;
 }
 div.stButton > button:hover { background-color: #0f172a; }
-/* active state flash */
 div.stButton > button:active { transform: scale(0.97); }
 
 /* ── SELECTBOX — cap width so they don't stretch ── */
@@ -74,28 +74,16 @@ div[data-testid="stSelectbox"] label {
     color: #1e293b !important; margin-bottom: 1px !important;
 }
 
-/* ── Bifurcation dropdowns — even more compact ── */
-.bif-compact div[data-baseweb="select"] > div { min-height: 23px !important; }
-.bif-compact div[data-baseweb="select"] [class*="singleValue"],
-.bif-compact div[data-baseweb="select"] [class*="placeholder"] {
-    font-size: 10px !important; font-weight: 600 !important;
-}
-.bif-compact div[data-baseweb="select"] input { font-size: 10px !important; }
-.bif-compact div[data-testid="stSelectbox"] label {
-    font-size: 9px !important; margin-bottom: 0 !important;
-}
-.bif-compact div[data-baseweb="select"] svg { width: 14px !important; height: 14px !important; }
-
 /* ── KPI CARDS ── */
-.kpi-row { display:flex; gap:30px; margin-bottom:0px; margin-top:0px; }
+.kpi-row { display:flex; gap:20px; margin-bottom:0px; margin-top:0px; }
 .kpi-card {
     flex:1; background:#f8fafc; border:1.5px solid #1e293b; border-left:3px solid #1e293b;
-    border-radius:5px; padding:4px 8px 3px 8px; min-width:0;
+    border-radius:5px; padding:2px 6px 2px 6px; min-width:0;
     font-family:"Times New Roman",serif; text-align:center;
 }
-.kpi-label { font-size:10px; font-weight:900; color:#1e293b; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:1px; }
-.kpi-value { font-size:15px; font-weight:700; color:#1e293b; line-height:1.1; font-family:"Times New Roman",serif; }
-.kpi-sub   { font-size:10px; font-weight:700; color:#334155; margin-top:1px; font-family:"Times New Roman",serif; }
+.kpi-label { font-size:8.5px; font-weight:900; color:#1e293b; text-transform:uppercase; letter-spacing:0.7px; margin-bottom:0px; }
+.kpi-value { font-size:13px; font-weight:700; color:#1e293b; line-height:1.05; font-family:"Times New Roman",serif; }
+.kpi-sub   { font-size:8.5px; font-weight:700; color:#334155; margin-top:0px; font-family:"Times New Roman",serif; }
 .kpi-card.c1{border-left-color:#2563eb;} .kpi-card.c1 .kpi-value{color:#2563eb;}
 .kpi-card.c2{border-left-color:#65a30d;} .kpi-card.c2 .kpi-value{color:#65a30d;}
 .kpi-card.c3{border-left-color:#d97706;} .kpi-card.c3 .kpi-value{color:#d97706;}
@@ -107,29 +95,52 @@ div[data-testid="stSelectbox"] label {
     padding:2px 4px 1px 4px; background:#f8fafc; margin-bottom:3px;
 }
 .plot-title {
-    font-size:14px; font-weight:700; color:#1e293b; margin-bottom:0px;
-    font-family:"Times New Roman",serif; text-align:center; line-height:1.3;
+    font-size:12px; font-weight:700; color:#1e293b; margin-bottom:0px;
+    font-family:"Times New Roman",serif; text-align:center; line-height:1.2;
 }
 .no-data-msg {
     color:#64748b; font-size:12px; font-family:"Times New Roman",serif;
     text-align:center; padding:30px 8px;
 }
 
-/* ── TITLE — bigger, tight spacing ── */
+/* ── TITLE ── */
 .dash-title {
     text-align:center; color:#1e293b; font-family:"Times New Roman",serif;
-    font-size:28px; font-weight:700; margin:2px 0 3px 0; padding:0;
+    font-size:22px; font-weight:700; margin:1px 0 0px 0; padding:0;
 }
 
-hr { margin:0px 0 1px 0 !important; border-color:#94a3b8; }
+/* Episode table styling */
+div[data-testid="stDataFrame"] table {
+    font-family: "Times New Roman", serif !important;
+    font-size: 11px !important;
+}
+div[data-testid="stDataFrame"] th {
+    background-color: #1e293b !important;
+    color: white !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 4px 6px !important;
+}
+div[data-testid="stDataFrame"] td {
+    font-size: 11px !important;
+    padding: 3px 6px !important;
+    color: #1e293b !important;
+}
+
+hr { margin:0px 0 0px 0 !important; border-color:#94a3b8; }
 header { visibility:hidden; } footer { visibility:hidden; }
 [data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }
+/* tighten gap after hr so KPI cards sit closer to buttons */
+div[data-testid="stVerticalBlock"] > div:has(hr) + div { margin-top: 0 !important; padding-top: 0 !important; }
 </style>
 
 <script>
 (function(){
   const BIF_LABELS = [
-    "Shift Bifurcation","CW Bifurcation","CW Filter","Select Month","Select Exchanger","Select Pump"
+    "Shift Bifurcation","CW Bifurcation","CW Filter","Select Month",
+    "Select Exchanger","Select Pump","Select Event"
   ];
   function applyAll(){
     const doc = window.parent.document;
@@ -140,7 +151,6 @@ header { visibility:hidden; } footer { visibility:hidden; }
       if(txt === "" || txt === "Pump" || txt === "Exchanger") return;
       if(!BIF_LABELS.some(l => txt.includes(l.split(" ")[0]))) return;
 
-      // ── compact the select control ──
       box.querySelectorAll('[data-baseweb="select"] > div').forEach(el =>
         el.style.setProperty('min-height','26px','important'));
       box.querySelectorAll('[class*="singleValue"],[class*="placeholder"]').forEach(el => {
@@ -154,17 +164,14 @@ header { visibility:hidden; } footer { visibility:hidden; }
         el.style.setProperty('height','13px','important');
       });
 
-      // ── inline: turn stSelectbox into a flex row so label + control sit side by side ──
       if(!box.dataset.inlined){
         box.dataset.inlined = "1";
-        // Make the box itself flex
         box.style.setProperty('display','flex','important');
         box.style.setProperty('flex-direction','row','important');
         box.style.setProperty('align-items','center','important');
         box.style.setProperty('gap','7px','important');
         box.style.setProperty('flex-wrap','nowrap','important');
         box.style.setProperty('margin-bottom','0','important');
-        // Style the native label as inline text
         label.style.setProperty('display','inline','important');
         label.style.setProperty('font-family','"Times New Roman",serif','important');
         label.style.setProperty('font-size','11px','important');
@@ -176,7 +183,6 @@ header { visibility:hidden; } footer { visibility:hidden; }
         label.style.setProperty('padding-bottom','0','important');
         label.style.setProperty('line-height','1','important');
         label.style.setProperty('order','0','important');
-        // Push the baseweb container to second position
         const bw = box.querySelector('[data-baseweb="select"]');
         if(bw){
           bw.style.setProperty('order','1','important');
@@ -216,6 +222,78 @@ def is_cw(n):
 
 
 # ─────────────────────────────────────────────────
+# DEDUPLICATION  (for episode extraction)
+# ─────────────────────────────────────────────────
+DEDUP_GAP_SHIFTS = 3
+
+EXCH_DEDUP_EVENTS = [
+    "tube_leak","tube_plug","tube_repair","tube_bundle_replace",
+    "tube_installed","tube_cleaning","hydroblast_cleaning",
+    "installing_plates","gasket_installed","pressure_test",
+    "temp_cooler_replace","transmitter_blowdown","drained_oil",
+    "sv_repair_replacement","steam_issue","n2_purging","dew_point_check",
+    "install_heater","capital_project","cleaning","work_completed",
+]
+PUMP_DEDUP_EVENTS = [
+    "seal_failure","low_level","pump_swap","startup","shutdown",
+    "trip_fault","low_pressure","oil_lubrication","steam_issue",
+    "strainer_clean","maintenance_pm","vibration",
+]
+
+def _shift_ord(df):
+    min_date = df["date"].min()
+    day_n = (df["date"] - min_date).dt.days
+    sh_n  = df["shift"].map({"Day": 0, "Night": 1}).fillna(0).astype(int)
+    return day_n * 2 + sh_n
+
+def extract_episodes(df, eq_col, events, gap=DEDUP_GAP_SHIFTS):
+    """Extract episodes (start/end/duration) for each equipment+event."""
+    df_w = df.copy()
+    df_w["_sord"] = _shift_ord(df_w)
+    records = []
+    for ev in events:
+        if ev not in df_w.columns:
+            continue
+        for eq, grp in df_w.groupby(eq_col):
+            active = grp[grp[ev] == 1].sort_values("_sord")
+            if active.empty:
+                continue
+            prev_ord = None; ep_start_idx = None; prev_idx = None
+            for idx, row in active.iterrows():
+                s = row["_sord"]
+                if prev_ord is None or (s - prev_ord) > gap:
+                    if ep_start_idx is not None:
+                        st_r = df_w.loc[ep_start_idx]; en_r = df_w.loc[prev_idx]
+                        dur  = int(en_r["_sord"] - st_r["_sord"]) + 1
+                        records.append({
+                            "Equipment": eq,
+                            "Event":     ev.replace("_"," ").title(),
+                            "Start Date":  st_r["date"].strftime("%d-%b-%Y"),
+                            "Start Shift": st_r["shift"],
+                            "End Date":    en_r["date"].strftime("%d-%b-%Y"),
+                            "End Shift":   en_r["shift"],
+                            "Shifts Open": dur,
+                            "Days Open":   round(dur / 2, 1),
+                        })
+                    ep_start_idx = idx
+                prev_ord = s; prev_idx = idx
+            if ep_start_idx is not None:
+                st_r = df_w.loc[ep_start_idx]; en_r = df_w.loc[prev_idx]
+                dur  = int(en_r["_sord"] - st_r["_sord"]) + 1
+                records.append({
+                    "Equipment": eq,
+                    "Event":     ev.replace("_"," ").title(),
+                    "Start Date":  st_r["date"].strftime("%d-%b-%Y"),
+                    "Start Shift": st_r["shift"],
+                    "End Date":    en_r["date"].strftime("%d-%b-%Y"),
+                    "End Shift":   en_r["shift"],
+                    "Shifts Open": dur,
+                    "Days Open":   round(dur / 2, 1),
+                })
+    return pd.DataFrame(records)
+
+
+# ─────────────────────────────────────────────────
 # EVENT DEFINITIONS
 # ─────────────────────────────────────────────────
 PUMP_ALL_EVENTS = [
@@ -235,11 +313,12 @@ EXCH_ALL_EVENTS = [
 ]
 EXCH_EVENTS_FULL_SET = EXCH_ALL_EVENTS + ["maintenance"]
 
+# Canonical color maps — used consistently across ALL tabs/charts
 PUMP_COLORS_MAP = {
     "seal_failure":"#2563eb","low_level":"#6366f1","pump_swap":"#d97706",
     "startup":"#059669","shutdown":"#64748b","trip_fault":"#be185d",
     "low_pressure":"#0891b2","oil_lubrication":"#be185d","steam_issue":"#ea580c",
-    "strainer_clean":"#65a30d","maintenance_pm":"#78350f",
+    "strainer_clean":"#65a30d","maintenance_pm":"#78350f","vibration":"#7c3aed",
 }
 EXCH_COLORS_MAP = {
     "tube_leak":"#dc2626","tube_plug":"#f59e0b","tube_repair":"#2563eb",
@@ -276,10 +355,12 @@ def make_colors(events, cmap):
 def load_pump():
     df = pd.read_csv("classified_output.csv")
     df["date"]     = pd.to_datetime(df["date"], errors="coerce")
-    df             = df[df["pump"].notna()]
+    df             = df[df["pump"].notna() & df["date"].notna()]
+    df["shift"]    = df["shift"].str.strip().replace({"Days":"Day","Nights":"Night"})
     df["month_dt"] = df["date"].dt.to_period("M").dt.to_timestamp()
     df["month"]    = df["month_dt"].dt.strftime("%B-%Y")
-    for c in PUMP_EVENTS_FULL_SET + ["maintenance_pm"]:
+    for c in PUMP_EVENTS_FULL_SET + ["maintenance_pm","pump_swap","startup","shutdown",
+                                      "oil_lubrication","vibration"]:
         if c not in df.columns: df[c] = 0
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
     return df
@@ -290,7 +371,7 @@ def load_exchanger():
     df = df[[c for c in df.columns if not c.startswith("[")]]
     df["shift"]    = df["shift"].str.strip().replace({"Days":"Day","Nights":"Night"})
     df["date"]     = pd.to_datetime(df["date"], errors="coerce")
-    df             = df[df["exchanger"].notna()]
+    df             = df[df["exchanger"].notna() & df["date"].notna()]
     df["month_dt"] = df["date"].dt.to_period("M").dt.to_timestamp()
     df["month"]    = df["month_dt"].dt.strftime("%B-%Y")
     df["is_cw"]    = df["exchanger"].apply(is_cw)
@@ -299,8 +380,102 @@ def load_exchanger():
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
     return df
 
+@st.cache_data
+def load_pump_episodes():
+    df = load_pump()
+    return extract_episodes(df, "pump", PUMP_DEDUP_EVENTS, DEDUP_GAP_SHIFTS)
+
+@st.cache_data
+def load_exchanger_episodes():
+    df = load_exchanger()
+    return extract_episodes(df, "exchanger", EXCH_DEDUP_EVENTS, DEDUP_GAP_SHIFTS)
+
 pump_df = load_pump()
 exch_df = load_exchanger()
+
+
+# ─────────────────────────────────────────────────
+# EXCEL EXPORT HELPER
+# ─────────────────────────────────────────────────
+def build_excel_bytes(ep_df, equip_type):
+    """Return bytes of a formatted Excel workbook for the episode DataFrame."""
+    import io
+    from openpyxl import Workbook as OWorkbook
+    from openpyxl.styles import (Font as OFont, PatternFill as OFill,
+                                  Alignment as OAlign, Border as OBorder, Side as OSide)
+    from openpyxl.utils import get_column_letter
+
+    wb  = OWorkbook()
+    ws  = wb.active
+    ws.title = f"{equip_type} Episodes"
+
+    hdr_fill  = OFill("solid", start_color="1E293B")
+    hdr_font  = OFont(bold=True, color="FFFFFF", name="Times New Roman", size=10)
+    data_font = OFont(name="Times New Roman", size=10)
+    center    = OAlign(horizontal="center", vertical="center", wrap_text=False)
+    left_al   = OAlign(horizontal="left",   vertical="center", wrap_text=False)
+    thin      = OSide(style="thin", color="CBD5E1")
+    brd       = OBorder(left=thin, right=thin, top=thin, bottom=thin)
+
+    # Determine columns based on equipment type
+    if equip_type == "Exchanger":
+        cols = ["Equipment","CW / Non-CW","Event",
+                "Start Date","Start Shift","End Date","End Shift",
+                "Shifts Open","Days Open","Maintenance"]
+        col_widths = [18, 12, 22, 13, 11, 13, 11, 11, 10, 12]
+    else:
+        cols = ["Equipment","Event",
+                "Start Date","Start Shift","End Date","End Shift",
+                "Shifts Open","Days Open","Maintenance"]
+        col_widths = [18, 22, 13, 11, 13, 11, 11, 10, 12]
+
+    # Write header
+    ws.row_dimensions[1].height = 26
+    for ci, (col_name, cw) in enumerate(zip(cols, col_widths), start=1):
+        cell = ws.cell(row=1, column=ci, value=col_name)
+        cell.font = hdr_font; cell.fill = hdr_fill
+        cell.alignment = center; cell.border = brd
+        ws.column_dimensions[get_column_letter(ci)].width = cw
+
+    ws.freeze_panes = "A2"
+
+    # Prepare data rows
+    df_out = ep_df.copy()
+    df_out = df_out.rename(columns={"Equipment": "Equipment"})
+
+    # Add CW / Non-CW column for exchanger
+    if equip_type == "Exchanger":
+        df_out["CW / Non-CW"] = df_out["Equipment"].apply(
+            lambda e: "CW" if is_cw(e) else "Non-CW")
+
+    # Add Maintenance column (0 by default; users can update or it can be joined)
+    df_out["Maintenance"] = 0
+
+    # Reorder to match cols (only keep cols that exist)
+    df_out = df_out[[c for c in cols if c in df_out.columns]]
+
+    # Alternate row fill
+    fill_even = OFill("solid", start_color="F1F5F9")
+    fill_odd  = OFill("solid", start_color="FFFFFF")
+
+    for ri, row_data in enumerate(df_out.itertuples(index=False), start=2):
+        fill = fill_even if ri % 2 == 0 else fill_odd
+        ws.row_dimensions[ri].height = 15
+        for ci, val in enumerate(row_data, start=1):
+            cell = ws.cell(row=ri, column=ci, value=val)
+            cell.font = data_font
+            cell.fill = fill
+            cell.border = brd
+            # Right-align numbers
+            if cols[ci-1] in ("Shifts Open", "Days Open", "Maintenance"):
+                cell.alignment = center
+            else:
+                cell.alignment = left_al
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf.getvalue()
 
 
 # ─────────────────────────────────────────────────
@@ -433,39 +608,6 @@ def plot_donut(title, raw_series, all_colors,
 
 
 # ─────────────────────────────────────────────────
-# CW OVERALL DONUT
-# ─────────────────────────────────────────────────
-def plot_cw_overall_donut(df, events, title="CW vs Non-CW Distribution"):
-    cw_tot  = int(df[df["is_cw"]][events].sum().sum())
-    ncw_tot = int(df[~df["is_cw"]][events].sum().sum())
-    total   = cw_tot + ncw_tot
-    if total == 0:
-        st.markdown(f'<div class="plot-box"><div class="plot-title">{title}</div>'
-                    '<div class="no-data-msg">No data</div></div>', unsafe_allow_html=True)
-        return
-    fig = plt.figure(figsize=FIGSIZE, facecolor=PLOT_BG)
-    fig.patch.set_facecolor(PLOT_BG)
-    gs  = gridspec.GridSpec(1,2, figure=fig, left=0.05, right=0.95,
-                            top=0.82, bottom=0.12, wspace=0.38)
-    for idx,(label,val,color) in enumerate([("CW",cw_tot,CW_COLOR),("Non-CW",ncw_tot,NONCW_COLOR)]):
-        ax = fig.add_subplot(gs[idx])
-        ax.set_facecolor(PLOT_BG)
-        for sp in ax.spines.values(): sp.set_visible(False)
-        ax.pie([val, total-val], colors=[color,"#e2e8f0"], startangle=90,
-               wedgeprops=dict(width=0.38, edgecolor="white", linewidth=0.7),
-               radius=0.88, center=(0,0))
-        pct = val/total*100 if total>0 else 0
-        ax.text(0, 0.10, f"{val}",      ha="center", va="center", fontsize=11, fontweight="bold", color=color)
-        ax.text(0,-0.20, f"{pct:.1f}%", ha="center", va="center", fontsize=8,  color="#475569")
-        ax.set_title(label, fontsize=9, fontweight="bold", color=color, pad=3)
-    st.markdown(f'<div class="plot-box"><div class="plot-title">{title}</div>',
-                unsafe_allow_html=True)
-    st.pyplot(fig, use_container_width=True)
-    plt.close(fig)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-# ─────────────────────────────────────────────────
 # KPI CARDS
 # ─────────────────────────────────────────────────
 def render_kpi(df, events, months_labels):
@@ -492,12 +634,12 @@ def render_kpi(df, events, months_labels):
       </div>
       <div class="kpi-card c3">
         <div class="kpi-label">Peak Month</div>
-        <div class="kpi-value" style="font-size:10px;padding-top:2px;">{peak_mon}</div>
+        <div class="kpi-value" style="font-size:9px;padding-top:1px;">{peak_mon}</div>
         <div class="kpi-sub">{peak_val} events recorded</div>
       </div>
       <div class="kpi-card c4">
         <div class="kpi-label">Top Event</div>
-        <div class="kpi-value" style="font-size:10px;padding-top:2px;">{top_ev}</div>
+        <div class="kpi-value" style="font-size:9px;padding-top:1px;">{top_ev}</div>
         <div class="kpi-sub">{top_ev_c} occurrences</div>
       </div>
     </div>""", unsafe_allow_html=True)
@@ -509,9 +651,20 @@ def render_kpi(df, events, months_labels):
 st.markdown("<div class='dash-title'>Equipment Reliability Dashboard</div>",
             unsafe_allow_html=True)
 
-# ── Single row: [Equipment dropdown] [Overall] [Monthly] [Equipment] ──
-# Use equal column widths so buttons are same size and everything is centred
-c0, c1, c2, c3 = st.columns([1, 1, 1, 1])
+# Enforce uniform button font so "Exchanger Analysis" fits without crowding
+st.markdown("""
+<style>
+div.stButton > button p,
+div.stButton > button span,
+div.stButton > button div,
+div.stButton > button {
+    font-size: 13px !important;
+    white-space: nowrap !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+c0, c1, c2, c3, c4 = st.columns([0.7, 1, 1, 1.15, 1])
 
 with c0:
     equip = st.selectbox("", ["Pump","Exchanger"],
@@ -528,67 +681,60 @@ with c2:
     if st.button("Monthly Analysis", key=f"btn_mo_{equip}"):
         st.session_state[nav_key] = "Monthly"; st.rerun()
 with c3:
-    if st.button(f"{equip} Analysis", key=f"btn_eq_{equip}"):
+    btn_label = f"{equip} Analysis"
+    if st.button(btn_label, key=f"btn_eq_{equip}"):
         st.session_state[nav_key] = "Equipment"; st.rerun()
+with c4:
+    if st.button("Event Analysis", key=f"btn_ev_{equip}"):
+        st.session_state[nav_key] = "EventAnalysis"; st.rerun()
 
 page = st.session_state[nav_key]
-PAGE_KEYS = {"Overall":f"btn_ov_{equip}","Monthly":f"btn_mo_{equip}","Equipment":f"btn_eq_{equip}"}
+PAGE_KEYS = {
+    "Overall":       f"btn_ov_{equip}",
+    "Monthly":       f"btn_mo_{equip}",
+    "Equipment":     f"btn_eq_{equip}",
+    "EventAnalysis": f"btn_ev_{equip}",
+}
 active_key = PAGE_KEYS[page]
+btn_label_for_js = f"{equip} Analysis"
 
-# Active nav button colour
 st.markdown(f"""
 <script>
 (function(){{
   const ak = "{active_key}";
-  const pm = {{"Overall Analysis":"{PAGE_KEYS['Overall']}",
-               "Monthly Analysis":"{PAGE_KEYS['Monthly']}",
-               "{equip} Analysis":"{PAGE_KEYS['Equipment']}"}};
-
+  const pm = {{
+    "Overall Analysis":     "{PAGE_KEYS['Overall']}",
+    "Monthly Analysis":     "{PAGE_KEYS['Monthly']}",
+    "{btn_label_for_js}":   "{PAGE_KEYS['Equipment']}",
+    "Event Analysis":       "{PAGE_KEYS['EventAnalysis']}"
+  }};
   function styleBtn(btn, active){{
     if(active){{
       btn.style.cssText = btn.style.cssText +
-        ';background-color:#ffffff !important' +
-        ';color:#1e293b !important' +
-        ';border:2px solid #1e293b !important' +
-        ';outline:none !important' +
-        ';box-shadow:none !important';
-      btn.querySelectorAll('*').forEach(el=>{{
-        el.style.setProperty('color','#1e293b','important');
-      }});
+        ';background-color:#ffffff !important;color:#1e293b !important' +
+        ';border:2px solid #1e293b !important;outline:none !important;box-shadow:none !important';
+      btn.querySelectorAll('*').forEach(el=>el.style.setProperty('color','#1e293b','important'));
     }} else {{
       btn.style.cssText = btn.style.cssText +
-        ';background-color:#1e293b !important' +
-        ';color:#ffffff !important' +
-        ';border:1px solid #334155 !important';
-      btn.querySelectorAll('*').forEach(el=>{{
-        el.style.setProperty('color','#ffffff','important');
-      }});
+        ';background-color:#1e293b !important;color:#ffffff !important;border:1px solid #334155 !important';
+      btn.querySelectorAll('*').forEach(el=>el.style.setProperty('color','#ffffff','important'));
     }}
   }}
-
   function apply(){{
     window.parent.document.querySelectorAll('.stButton button').forEach(btn=>{{
       const t = btn.innerText.trim();
-      if(pm[t]===ak){{
-        btn.dataset.navActive = '1';
-        styleBtn(btn, true);
-      }} else if(pm[t]){{
-        delete btn.dataset.navActive;
-        styleBtn(btn, false);
-      }}
+      if(pm[t]===ak){{ btn.dataset.navActive='1'; styleBtn(btn,true); }}
+      else if(pm[t]){{ delete btn.dataset.navActive; styleBtn(btn,false); }}
     }});
   }}
-
-  // Re-enforce active button on every mouseover/focus so hover CSS can't win
-  window.parent.document.addEventListener('mouseover', function(e){{
-    const btn = e.target.closest('button');
-    if(btn && btn.dataset.navActive === '1') styleBtn(btn, true);
-  }}, true);
-  window.parent.document.addEventListener('focusin', function(e){{
-    const btn = e.target.closest('button');
-    if(btn && btn.dataset.navActive === '1') styleBtn(btn, true);
-  }}, true);
-
+  window.parent.document.addEventListener('mouseover',function(e){{
+    const btn=e.target.closest('button');
+    if(btn&&btn.dataset.navActive==='1') styleBtn(btn,true);
+  }},true);
+  window.parent.document.addEventListener('focusin',function(e){{
+    const btn=e.target.closest('button');
+    if(btn&&btn.dataset.navActive==='1') styleBtn(btn,true);
+  }},true);
   apply();
   [100,300,600,1200,2500].forEach(t=>setTimeout(apply,t));
   new MutationObserver(apply).observe(window.parent.document.body,{{childList:true,subtree:true}});
@@ -608,12 +754,16 @@ if equip == "Pump":
     EVENTS_FULL = [e for e in PUMP_EVENTS_FULL_SET+["maintenance_pm"] if e in df.columns]
     COLORS      = make_colors(EVENTS,      PUMP_COLORS_MAP)
     COLORS_FULL = make_colors(EVENTS_FULL, PUMP_COLORS_MAP)
+    ALL_EV_LIST = PUMP_DEDUP_EVENTS
+    COLORS_MAP  = PUMP_COLORS_MAP
 else:
     df = exch_df.copy(); eq_col="exchanger"; info_col="exchanger_info"
     EVENTS      = [e for e in EXCH_ALL_EVENTS    if e in df.columns]
     EVENTS_FULL = [e for e in EXCH_EVENTS_FULL_SET if e in df.columns]
     COLORS      = make_colors(EVENTS,      EXCH_COLORS_MAP)
     COLORS_FULL = make_colors(EVENTS_FULL, EXCH_COLORS_MAP)
+    ALL_EV_LIST = EXCH_DEDUP_EVENTS
+    COLORS_MAP  = EXCH_COLORS_MAP
 
 months_sorted = sorted(df["month_dt"].dropna().unique())
 months_labels = [pd.to_datetime(m).strftime("%B-%Y") for m in months_sorted]
@@ -634,8 +784,7 @@ if page == "Overall":
                                     index=0, key=f"bif_{equip}") == "ON"
         with colB:
             cw_filter_ov = st.selectbox(
-                "CW Bifurcation",
-                ["All", "CW Only", "Non-CW Only"],
+                "CW Bifurcation", ["All","CW Only","Non-CW Only"],
                 index=0, key=f"cw_bif_ov_{equip}"
             )
     else:
@@ -655,9 +804,9 @@ if page == "Overall":
     else:
         df_donut = df; donut_suffix = ""
 
-    if not shift_on:
-        col1, col2 = st.columns(2, gap="small")
-        with col1:
+    col1, col2 = st.columns(2, gap="small")
+    with col1:
+        if not shift_on:
             def draw_dn(ax):
                 grp   = df.groupby(["month","shift"])[EVENTS].sum()
                 day   = get_shift(grp,"Day",  months_labels, EVENTS)
@@ -680,17 +829,7 @@ if page == "Overall":
                 ax.legend(fontsize=6.5, loc='upper left', framealpha=0.9, edgecolor="black")
                 style_bar(ax)
             wrap_plot("Monthly Event Trend  (Day | Night)", draw_dn)
-        with col2:
-            if equip == "Exchanger":
-                plot_donut(f"Event Distribution{donut_suffix}",
-                           df_donut[EVENTS].sum(), COLORS, top_n=10)
-            else:
-                plot_donut("Overall Event Distribution",
-                           df[EVENTS].sum(), COLORS, filter_top5=True)
-
-    else:
-        col1, col2 = st.columns(2, gap="small")
-        with col1:
+        else:
             def draw_dual(ax):
                 grp   = df.groupby(["month","shift"])[EVENTS].sum()
                 day   = get_shift(grp,"Day",  months_labels, EVENTS)
@@ -713,13 +852,14 @@ if page == "Overall":
                 ax.set_ylabel("Event Count", fontsize=6.5, color="black")
                 style_bar(ax)
             wrap_plot("Monthly Event Trend  (Shift × Event Type)", draw_dual)
-        with col2:
-            if equip == "Exchanger":
-                plot_donut(f"Event Distribution{donut_suffix}",
-                           df_donut[EVENTS].sum(), COLORS, top_n=10)
-            else:
-                plot_donut("Overall Event Distribution",
-                           df[EVENTS].sum(), COLORS, filter_top5=True)
+
+    with col2:
+        if equip == "Exchanger":
+            plot_donut(f"Event Distribution{donut_suffix}",
+                       df_donut[EVENTS].sum(), COLORS, top_n=10)
+        else:
+            plot_donut("Overall Event Distribution",
+                       df[EVENTS].sum(), COLORS, filter_top5=True)
 
 
 # ══════════════════════════════════════════════════
@@ -860,12 +1000,26 @@ elif page == "Equipment":
     with col1:
         st.markdown('<div class="plot-box"><div class="plot-title">Equipment History</div>',
                     unsafe_allow_html=True)
+        # Build history with Days Open from episodes
         hist = eq_df[["date","shift",info_col]].sort_values("date").copy()
         hist.columns = ["Date","Shift","Event Info"]
         if hist.empty:
             st.markdown('<div class="no-data-msg">No data available</div>', unsafe_allow_html=True)
         else:
-            st.dataframe(hist, use_container_width=True, height=260)
+            # Load episodes for this equipment and join Days Open
+            ep_all = load_pump_episodes() if equip == "Pump" else load_exchanger_episodes()
+            ep_eq  = ep_all[ep_all["Equipment"] == selected_eq][["Start Date","Event","Days Open"]].copy()
+            ep_eq  = ep_eq.rename(columns={"Start Date":"Date","Event":"Event Info"})
+            # Merge on Date (formatted) and Event Info
+            hist["Date_str"] = hist["Date"].dt.strftime("%d-%b-%Y")
+            hist_merged = hist.merge(
+                ep_eq.rename(columns={"Date":"Date_str"}),
+                on=["Date_str","Event Info"], how="left"
+            )
+            # Keep only Days Open column alongside date and info
+            display_hist = hist_merged[["Date","Event Info","Days Open"]].copy()
+            display_hist["Date"] = display_hist["Date"].dt.strftime("%d-%b-%Y")
+            st.dataframe(display_hist, use_container_width=True, height=260)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
@@ -874,3 +1028,140 @@ elif page == "Equipment":
         plot_donut(donut_title, ev_sum,
                    make_colors(EVENTS_FULL, PUMP_COLORS_MAP if equip=="Pump" else EXCH_COLORS_MAP),
                    top_n=10)
+
+
+# ══════════════════════════════════════════════════
+# EVENT ANALYSIS
+# ══════════════════════════════════════════════════
+elif page == "EventAnalysis":
+
+    # ── filters ──
+    available_evs = [e for e in ALL_EV_LIST if e in df.columns and int(df[e].sum()) > 0]
+    ev_labels     = [e.replace("_"," ").title() for e in available_evs]
+    ev_label_map  = dict(zip(ev_labels, available_evs))
+
+    if equip == "Exchanger":
+        colA, colB, _ = st.columns([1, 1, 6])
+        with colA:
+            sel_ev_label = st.selectbox("Select Event", ev_labels, key=f"evsel_{equip}")
+        with colB:
+            cw_ev_filter = st.selectbox("CW Filter",["All","CW Only","Non-CW Only"],
+                                        index=0, key=f"cw_evf_{equip}")
+    else:
+        colA, _ = st.columns([1, 7])
+        with colA:
+            sel_ev_label = st.selectbox("Select Event", ev_labels, key=f"evsel_{equip}")
+        cw_ev_filter = "All"
+
+    sel_ev = ev_label_map[sel_ev_label]
+
+    # Canonical color for this event — same map used everywhere in the dashboard
+    ev_color = COLORS_MAP.get(sel_ev, FALLBACK_COLORS[0])
+
+    # ── load episodes (for the table only) ──
+    if equip == "Pump":
+        ep_df_all = load_pump_episodes()
+    else:
+        ep_df_all = load_exchanger_episodes()
+
+    ep_df = ep_df_all[ep_df_all["Event"] == sel_ev_label].copy()
+
+    # ── raw event counts per equipment (for bar chart) ──
+    ev_df_filt = df.copy()
+    if equip == "Exchanger" and cw_ev_filter != "All":
+        if cw_ev_filter == "CW Only":
+            ev_df_filt = ev_df_filt[ev_df_filt["is_cw"]]
+        else:
+            ev_df_filt = ev_df_filt[~ev_df_filt["is_cw"]]
+
+    if equip == "Exchanger" and cw_ev_filter != "All":
+        cw_equips = {e for e in ep_df["Equipment"].unique() if is_cw(e)}
+        if cw_ev_filter == "CW Only":
+            ep_df = ep_df[ep_df["Equipment"].isin(cw_equips)]
+        else:
+            ep_df = ep_df[~ep_df["Equipment"].isin(cw_equips)]
+
+    cw_suffix = f"  [{cw_ev_filter}]" if equip=="Exchanger" and cw_ev_filter!="All" else ""
+
+    col1, col2 = st.columns(2, gap="small")
+
+    # ── LEFT: episode table ──
+    with col1:
+        st.markdown(
+            f'<div class="plot-box"><div class="plot-title">'
+            f'Episode Log — {sel_ev_label}{cw_suffix}'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+        if ep_df.empty:
+            st.markdown('<div class="no-data-msg">No episodes found for this event.</div>',
+                        unsafe_allow_html=True)
+        else:
+            display_df = ep_df.reset_index(drop=True)
+
+            def color_days(val):
+                if val <= 1:   return "background-color:#d1fae5; color:#064e3b;"
+                elif val <= 3: return "background-color:#fef9c3; color:#713f12;"
+                elif val <= 7: return "background-color:#fed7aa; color:#7c2d12;"
+                else:          return "background-color:#fecaca; color:#7f1d1d;"
+
+            styled = (
+                display_df.style
+                .applymap(color_days, subset=["Days Open"])
+                .format({"Days Open": "{:.1f}", "Shifts Open": "{:.0f}"})
+                .set_properties(**{"font-family":"Times New Roman, serif","font-size":"11px"})
+            )
+            st.dataframe(styled, use_container_width=True, height=240)
+
+            # Excel download button
+            xl_bytes  = build_excel_bytes(ep_df, equip)
+            file_name = f"{equip}_{sel_ev_label.replace(' ','_')}{cw_suffix.strip()}_episodes.xlsx"
+            st.download_button(
+                label="⬇ Download Excel",
+                data=xl_bytes,
+                file_name=file_name,
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key=f"dl_{equip}_{sel_ev}",
+            )
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── RIGHT: Top 5 equipment bar chart — same style as Overall tab ──
+    with col2:
+        eq_ev_counts = (
+            ev_df_filt[ev_df_filt[sel_ev] == 1]
+            .groupby(eq_col)[sel_ev]
+            .sum()
+            .sort_values(ascending=False)
+            .head(5)
+        )
+
+        if eq_ev_counts.empty:
+            st.markdown(
+                f'<div class="plot-box"><div class="plot-title">'
+                f'Top 5 {equip}s — {sel_ev_label}{cw_suffix}</div>'
+                f'<div class="no-data-msg">No data available</div></div>',
+                unsafe_allow_html=True
+            )
+        else:
+            def draw_top5_bar(ax):
+                eq_names = eq_ev_counts.index.tolist()
+                ev_vals  = eq_ev_counts.values
+                xi       = np.arange(len(eq_names))
+                y_max    = max(ev_vals.max(), 1)
+
+                ax.bar(xi, ev_vals, width=BAR_W,
+                       color=ev_color, edgecolor="white", linewidth=0.6, zorder=3)
+
+                ax.set_ylim(0, y_max * 1.20)
+                grand = ev_vals.sum()
+
+                for i, v in enumerate(ev_vals):
+                    safe_label(ax, xi[i], v, f"{int(v)}", y_max * 1.20, fontsize=6.2)
+
+                ax.set_xticks(xi)
+                ax.set_xticklabels(eq_names, rotation=25, ha="right", fontsize=6.5)
+                ax.set_ylabel("Event Count", fontsize=6.5, color="black")
+                style_bar(ax)
+
+            wrap_plot(f"Top 5 {equip}s — {sel_ev_label}{cw_suffix}", draw_top5_bar)
