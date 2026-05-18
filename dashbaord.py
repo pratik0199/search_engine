@@ -523,39 +523,67 @@ def plot_donut(title, raw_series, all_colors,
 
 
 # ─────────────────────────────────────────────────
-# KPI CARDS
+# KPI CARDS  ── now episode-based
+#
+# Logic:
+#   • Total Episodes   = total deduplicated episodes across all event types
+#   • Avg / Month      = total episodes ÷ number of distinct months in data
+#   • Peak Month       = month with the most episode *start dates*
+#   • Top Event        = event type with the most episodes (not raw flag counts)
 # ─────────────────────────────────────────────────
-def render_kpi(df, events, months_labels):
-    total_ev  = int(df[events].sum().sum())
-    total_mon = len(months_labels)
-    avg_pm    = round(total_ev / max(total_mon,1), 1)
-    ev_by_mon = df.groupby("month")[events].sum().reindex(months_labels).fillna(0).sum(axis=1)
-    peak_mon  = ev_by_mon.idxmax() if not ev_by_mon.empty else "—"
-    peak_val  = int(ev_by_mon.max()) if not ev_by_mon.empty else 0
-    ev_totals = df[events].sum().sort_values(ascending=False)
-    top_ev    = ev_totals.index[0].replace("_"," ").title() if len(ev_totals)>0 else "—"
-    top_ev_c  = int(ev_totals.iloc[0]) if len(ev_totals)>0 else 0
+def render_kpi(episodes_df, months_labels):
+    """
+    episodes_df : output of load_pump_episodes() or load_exchanger_episodes()
+                  columns: Equipment, Event, Start Date, Start Shift,
+                           End Date, End Shift, Shifts Open, Days Open
+    months_labels : ordered list of "Month-YYYY" strings present in the raw df
+    """
+    if episodes_df.empty:
+        total_ep  = 0
+        avg_pm    = 0.0
+        peak_mon  = "—"
+        peak_val  = 0
+        top_ev    = "—"
+        top_ev_c  = 0
+    else:
+        total_ep   = len(episodes_df)
+        total_mon  = len(months_labels)
+        avg_pm     = round(total_ep / max(total_mon, 1), 1)
+
+        # Peak month: parse Start Date → month label, count episodes per month
+        ep_copy = episodes_df.copy()
+        ep_copy["_start_dt"]  = pd.to_datetime(ep_copy["Start Date"], format="%d-%b-%Y", errors="coerce")
+        ep_copy["_month_lbl"] = ep_copy["_start_dt"].dt.strftime("%B-%Y")
+        ep_by_mon = ep_copy["_month_lbl"].value_counts()
+        peak_mon  = ep_by_mon.idxmax() if not ep_by_mon.empty else "—"
+        peak_val  = int(ep_by_mon.max())  if not ep_by_mon.empty else 0
+
+        # Top event: episode count per event type
+        ev_counts = episodes_df["Event"].value_counts()
+        top_ev    = ev_counts.index[0] if not ev_counts.empty else "—"
+        top_ev_c  = int(ev_counts.iloc[0]) if not ev_counts.empty else 0
+
     st.markdown(f"""
     <div class="kpi-row">
       <div class="kpi-card c1">
-        <div class="kpi-label">Total Events</div>
-        <div class="kpi-value">{total_ev:,}</div>
-        <div class="kpi-sub">All periods combined</div>
+        <div class="kpi-label">Total Episodes</div>
+        <div class="kpi-value">{total_ep:,}</div>
+        <div class="kpi-sub">Deduplicated across all events</div>
       </div>
       <div class="kpi-card c2">
-        <div class="kpi-label">Avg / Month</div>
+        <div class="kpi-label">Avg Episodes / Month</div>
         <div class="kpi-value">{avg_pm}</div>
-        <div class="kpi-sub">Across {total_mon} months</div>
+        <div class="kpi-sub">Across {len(months_labels)} months</div>
       </div>
       <div class="kpi-card c3">
         <div class="kpi-label">Peak Month</div>
         <div class="kpi-value" style="font-size:9px;padding-top:1px;">{peak_mon}</div>
-        <div class="kpi-sub">{peak_val} events recorded</div>
+        <div class="kpi-sub">{peak_val} episodes started</div>
       </div>
       <div class="kpi-card c4">
         <div class="kpi-label">Top Event</div>
         <div class="kpi-value" style="font-size:9px;padding-top:1px;">{top_ev}</div>
-        <div class="kpi-sub">{top_ev_c} occurrences</div>
+        <div class="kpi-sub">{top_ev_c} episodes</div>
       </div>
     </div>""", unsafe_allow_html=True)
 
@@ -671,6 +699,7 @@ if equip == "Pump":
     COLORS_FULL = make_colors(EVENTS_FULL, PUMP_COLORS_MAP)
     ALL_EV_LIST = PUMP_DEDUP_EVENTS
     COLORS_MAP  = PUMP_COLORS_MAP
+    episodes_df = load_pump_episodes()
 else:
     df = exch_df.copy(); eq_col="exchanger"; info_col="exchanger_info"
     EVENTS      = [e for e in EXCH_ALL_EVENTS    if e in df.columns]
@@ -679,12 +708,14 @@ else:
     COLORS_FULL = make_colors(EVENTS_FULL, EXCH_COLORS_MAP)
     ALL_EV_LIST = EXCH_DEDUP_EVENTS
     COLORS_MAP  = EXCH_COLORS_MAP
+    episodes_df = load_exchanger_episodes()
 
 months_sorted = sorted(df["month_dt"].dropna().unique())
 months_labels = [pd.to_datetime(m).strftime("%B-%Y") for m in months_sorted]
 x = np.arange(len(months_labels))
 
-render_kpi(df, EVENTS, months_labels)
+# ── KPI cards now use deduplicated episode counts ──
+render_kpi(episodes_df, months_labels)
 
 
 # ══════════════════════════════════════════════════
@@ -1034,15 +1065,18 @@ elif page == "EventAnalysis":
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ── RIGHT: Top 5 equipment bar chart — same style as Overall tab ──
+    # ── RIGHT: Top 5 equipment bar chart — episode counts (not raw flags) ──
     with col2:
-        eq_ev_counts = (
-            ev_df_filt[ev_df_filt[sel_ev] == 1]
-            .groupby(eq_col)[sel_ev]
-            .sum()
-            .sort_values(ascending=False)
-            .head(5)
-        )
+        # Count episodes per equipment for this event (already filtered by CW above)
+        if ep_df.empty:
+            eq_ev_counts = pd.Series(dtype=int)
+        else:
+            eq_ev_counts = (
+                ep_df.groupby("Equipment")
+                .size()
+                .sort_values(ascending=False)
+                .head(5)
+            )
 
         if eq_ev_counts.empty:
             st.markdown(
@@ -1062,14 +1096,13 @@ elif page == "EventAnalysis":
                        color=ev_color, edgecolor="white", linewidth=0.6, zorder=3)
 
                 ax.set_ylim(0, y_max * 1.20)
-                grand = ev_vals.sum()
 
                 for i, v in enumerate(ev_vals):
                     safe_label(ax, xi[i], v, f"{int(v)}", y_max * 1.20, fontsize=6.2)
 
                 ax.set_xticks(xi)
                 ax.set_xticklabels(eq_names, rotation=25, ha="right", fontsize=6.5)
-                ax.set_ylabel("Event Count", fontsize=6.5, color="black")
+                ax.set_ylabel("Episode Count", fontsize=6.5, color="black")
                 style_bar(ax)
 
             wrap_plot(f"Top 5 {equip}s — {sel_ev_label}{cw_suffix}", draw_top5_bar)
