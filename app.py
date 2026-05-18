@@ -106,7 +106,7 @@ div[data-testid="stSelectbox"] label {
 /* ── TITLE ── */
 .dash-title {
     text-align:center; color:#1e293b; font-family:"Times New Roman",serif;
-    font-size:26px; font-weight:700; margin:1px 0 0px 0; padding:0;
+    font-size:28px; font-weight:700; margin:1px 0 0px 0; padding:0;
 }
 
 /* Episode table styling */
