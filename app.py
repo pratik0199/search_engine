@@ -142,7 +142,7 @@ div[data-testid="stVerticalBlock"] > div:has(hr) + div { margin-top: 0 !importan
     "Shift Bifurcation","CW Bifurcation","CW Filter","Select Month",
     "Select Exchanger","Select Pump","Select Event"
   ];
-  function applyAll(){
+  function All(){
     const doc = window.parent.document;
     doc.querySelectorAll('[data-testid="stSelectbox"]').forEach(function(box){
       const label = box.querySelector(':scope > label');
@@ -193,9 +193,9 @@ div[data-testid="stVerticalBlock"] > div:has(hr) + div { margin-top: 0 !importan
       }
     });
   }
-  applyAll();
-  [100,300,600,1200,2500].forEach(t => setTimeout(applyAll, t));
-  new MutationObserver(applyAll).observe(
+  All();
+  [100,300,600,1200,2500].forEach(t => setTimeout(All, t));
+  new MutationObserver(All).observe(
     window.parent.document.body, {childList:true, subtree:true}
   );
 })();
@@ -374,7 +374,7 @@ def load_exchanger():
     df             = df[df["exchanger"].notna() & df["date"].notna()]
     df["month_dt"] = df["date"].dt.to_period("M").dt.to_timestamp()
     df["month"]    = df["month_dt"].dt.strftime("%B-%Y")
-    df["is_cw"]    = df["exchanger"].apply(is_cw)
+    df["is_cw"]    = df["exchanger"].(is_cw)
     for c in EXCH_EVENTS_FULL_SET:
         if c not in df.columns: df[c] = 0
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
@@ -636,7 +636,7 @@ st.markdown(f"""
       btn.querySelectorAll('*').forEach(el=>el.style.setProperty('color','#ffffff','important'));
     }}
   }}
-  function apply(){{
+  function (){{
     window.parent.document.querySelectorAll('.stButton button').forEach(btn=>{{
       const t = btn.innerText.trim();
       if(pm[t]===ak){{ btn.dataset.navActive='1'; styleBtn(btn,true); }}
@@ -651,9 +651,9 @@ st.markdown(f"""
     const btn=e.target.closest('button');
     if(btn&&btn.dataset.navActive==='1') styleBtn(btn,true);
   }},true);
-  apply();
-  [100,300,600,1200,2500].forEach(t=>setTimeout(apply,t));
-  new MutationObserver(apply).observe(window.parent.document.body,{{childList:true,subtree:true}});
+  ();
+  [100,300,600,1200,2500].forEach(t=>setTimeout(,t));
+  new MutationObserver().observe(window.parent.document.body,{{childList:true,subtree:true}});
 }})();
 </script>
 """, unsafe_allow_html=True)
@@ -1009,7 +1009,7 @@ elif page == "EventAnalysis":
 
             styled = (
                 display_df.style
-                .applymap(color_days, subset=["Days Open"])
+                .stylemap(color_days, subset=["Days Open"])
                 .format({"Days Open": "{:.1f}", "Shifts Open": "{:.0f}"})
                 .set_properties(**{"font-family":"Times New Roman, serif","font-size":"11px"})
             )
