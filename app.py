@@ -3,7 +3,6 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib.lines import Line2D
 
 st.set_page_config(layout="wide")
 
@@ -353,7 +352,7 @@ def make_colors(events, cmap):
 # ─────────────────────────────────────────────────
 @st.cache_data
 def load_pump():
-    df = pd.read_csv(r"C:\Users\psonawane\Downloads\classified_output.csv")
+    df = pd.read_csv("classified_output.csv")
     df["date"]     = pd.to_datetime(df["date"], errors="coerce")
     df             = df[df["pump"].notna() & df["date"].notna()]
     df["shift"]    = df["shift"].str.strip().replace({"Days":"Day","Nights":"Night"})
@@ -367,7 +366,7 @@ def load_pump():
 
 @st.cache_data
 def load_exchanger():
-    df = pd.read_csv(r"C:\Users\psonawane\Downloads\exchanger_classified_final.csv")
+    df = pd.read_csv("exchanger_classified_final.csv")
     df = df[[c for c in df.columns if not c.startswith("[")]]
     df["shift"]    = df["shift"].str.strip().replace({"Days":"Day","Nights":"Night"})
     df["date"]     = pd.to_datetime(df["date"], errors="coerce")
