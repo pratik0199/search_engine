@@ -338,7 +338,7 @@ NONCW_COLOR = "#d97706"
 SHIFT_COLORS = {"Day":"#0d9488","Night":"#475569"}
 PLOT_BG  = "#f8fafc"
 GRID_CLR = "#cbd5e1"
-FIGSIZE  = (6.5, 2.8)
+FIGSIZE  = (6.8, 2.8)
 BAR_W    = 0.50
 
 def make_colors(events, cmap):
@@ -392,90 +392,6 @@ def load_exchanger_episodes():
 
 pump_df = load_pump()
 exch_df = load_exchanger()
-
-
-# ─────────────────────────────────────────────────
-# EXCEL EXPORT HELPER
-# ─────────────────────────────────────────────────
-def build_excel_bytes(ep_df, equip_type):
-    """Return bytes of a formatted Excel workbook for the episode DataFrame."""
-    import io
-    from openpyxl import Workbook as OWorkbook
-    from openpyxl.styles import (Font as OFont, PatternFill as OFill,
-                                  Alignment as OAlign, Border as OBorder, Side as OSide)
-    from openpyxl.utils import get_column_letter
-
-    wb  = OWorkbook()
-    ws  = wb.active
-    ws.title = f"{equip_type} Episodes"
-
-    hdr_fill  = OFill("solid", start_color="1E293B")
-    hdr_font  = OFont(bold=True, color="FFFFFF", name="Times New Roman", size=10)
-    data_font = OFont(name="Times New Roman", size=10)
-    center    = OAlign(horizontal="center", vertical="center", wrap_text=False)
-    left_al   = OAlign(horizontal="left",   vertical="center", wrap_text=False)
-    thin      = OSide(style="thin", color="CBD5E1")
-    brd       = OBorder(left=thin, right=thin, top=thin, bottom=thin)
-
-    # Determine columns based on equipment type
-    if equip_type == "Exchanger":
-        cols = ["Equipment","CW / Non-CW","Event",
-                "Start Date","Start Shift","End Date","End Shift",
-                "Shifts Open","Days Open","Maintenance"]
-        col_widths = [18, 12, 22, 13, 11, 13, 11, 11, 10, 12]
-    else:
-        cols = ["Equipment","Event",
-                "Start Date","Start Shift","End Date","End Shift",
-                "Shifts Open","Days Open","Maintenance"]
-        col_widths = [18, 22, 13, 11, 13, 11, 11, 10, 12]
-
-    # Write header
-    ws.row_dimensions[1].height = 26
-    for ci, (col_name, cw) in enumerate(zip(cols, col_widths), start=1):
-        cell = ws.cell(row=1, column=ci, value=col_name)
-        cell.font = hdr_font; cell.fill = hdr_fill
-        cell.alignment = center; cell.border = brd
-        ws.column_dimensions[get_column_letter(ci)].width = cw
-
-    ws.freeze_panes = "A2"
-
-    # Prepare data rows
-    df_out = ep_df.copy()
-    df_out = df_out.rename(columns={"Equipment": "Equipment"})
-
-    # Add CW / Non-CW column for exchanger
-    if equip_type == "Exchanger":
-        df_out["CW / Non-CW"] = df_out["Equipment"].apply(
-            lambda e: "CW" if is_cw(e) else "Non-CW")
-
-    # Add Maintenance column (0 by default; users can update or it can be joined)
-    df_out["Maintenance"] = 0
-
-    # Reorder to match cols (only keep cols that exist)
-    df_out = df_out[[c for c in cols if c in df_out.columns]]
-
-    # Alternate row fill
-    fill_even = OFill("solid", start_color="F1F5F9")
-    fill_odd  = OFill("solid", start_color="FFFFFF")
-
-    for ri, row_data in enumerate(df_out.itertuples(index=False), start=2):
-        fill = fill_even if ri % 2 == 0 else fill_odd
-        ws.row_dimensions[ri].height = 15
-        for ci, val in enumerate(row_data, start=1):
-            cell = ws.cell(row=ri, column=ci, value=val)
-            cell.font = data_font
-            cell.fill = fill
-            cell.border = brd
-            # Right-align numbers
-            if cols[ci-1] in ("Shifts Open", "Days Open", "Maintenance"):
-                cell.alignment = center
-            else:
-                cell.alignment = left_al
-
-    buf = io.BytesIO()
-    wb.save(buf)
-    buf.seek(0)
-    return buf.getvalue()
 
 
 # ─────────────────────────────────────────────────
@@ -1000,26 +916,12 @@ elif page == "Equipment":
     with col1:
         st.markdown('<div class="plot-box"><div class="plot-title">Equipment History</div>',
                     unsafe_allow_html=True)
-        # Build history with Days Open from episodes
         hist = eq_df[["date","shift",info_col]].sort_values("date").copy()
         hist.columns = ["Date","Shift","Event Info"]
         if hist.empty:
             st.markdown('<div class="no-data-msg">No data available</div>', unsafe_allow_html=True)
         else:
-            # Load episodes for this equipment and join Days Open
-            ep_all = load_pump_episodes() if equip == "Pump" else load_exchanger_episodes()
-            ep_eq  = ep_all[ep_all["Equipment"] == selected_eq][["Start Date","Event","Days Open"]].copy()
-            ep_eq  = ep_eq.rename(columns={"Start Date":"Date","Event":"Event Info"})
-            # Merge on Date (formatted) and Event Info
-            hist["Date_str"] = hist["Date"].dt.strftime("%d-%b-%Y")
-            hist_merged = hist.merge(
-                ep_eq.rename(columns={"Date":"Date_str"}),
-                on=["Date_str","Event Info"], how="left"
-            )
-            # Keep only Days Open column alongside date and info
-            display_hist = hist_merged[["Date","Event Info","Days Open"]].copy()
-            display_hist["Date"] = display_hist["Date"].dt.strftime("%d-%b-%Y")
-            st.dataframe(display_hist, use_container_width=True, height=260)
+            st.dataframe(hist, use_container_width=True, height=260)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
@@ -1111,18 +1013,7 @@ elif page == "EventAnalysis":
                 .format({"Days Open": "{:.1f}", "Shifts Open": "{:.0f}"})
                 .set_properties(**{"font-family":"Times New Roman, serif","font-size":"11px"})
             )
-            st.dataframe(styled, use_container_width=True, height=240)
-
-            # Excel download button
-            xl_bytes  = build_excel_bytes(ep_df, equip)
-            file_name = f"{equip}_{sel_ev_label.replace(' ','_')}{cw_suffix.strip()}_episodes.xlsx"
-            st.download_button(
-                label="⬇ Download Excel",
-                data=xl_bytes,
-                file_name=file_name,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                key=f"dl_{equip}_{sel_ev}",
-            )
+            st.dataframe(styled, use_container_width=True, height=260)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
