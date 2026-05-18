@@ -3,7 +3,6 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib.lines import Line2D
 
 st.set_page_config(layout="wide")
 
@@ -106,7 +105,7 @@ div[data-testid="stSelectbox"] label {
 /* ── TITLE ── */
 .dash-title {
     text-align:center; color:#1e293b; font-family:"Times New Roman",serif;
-    font-size:28px; font-weight:700; margin:1px 0 0px 0; padding:0;
+    font-size:22px; font-weight:700; margin:1px 0 0px 0; padding:0;
 }
 
 /* Episode table styling */
@@ -338,7 +337,7 @@ NONCW_COLOR = "#d97706"
 SHIFT_COLORS = {"Day":"#0d9488","Night":"#475569"}
 PLOT_BG  = "#f8fafc"
 GRID_CLR = "#cbd5e1"
-FIGSIZE  = (6.8, 2.8)
+FIGSIZE  = (6.5, 2.8)
 BAR_W    = 0.50
 
 def make_colors(events, cmap):
@@ -916,12 +915,26 @@ elif page == "Equipment":
     with col1:
         st.markdown('<div class="plot-box"><div class="plot-title">Equipment History</div>',
                     unsafe_allow_html=True)
+        # Build history with Days Open from episodes
         hist = eq_df[["date","shift",info_col]].sort_values("date").copy()
         hist.columns = ["Date","Shift","Event Info"]
         if hist.empty:
             st.markdown('<div class="no-data-msg">No data available</div>', unsafe_allow_html=True)
         else:
-            st.dataframe(hist, use_container_width=True, height=260)
+            # Load episodes for this equipment and join Days Open
+            ep_all = load_pump_episodes() if equip == "Pump" else load_exchanger_episodes()
+            ep_eq  = ep_all[ep_all["Equipment"] == selected_eq][["Start Date","Event","Days Open"]].copy()
+            ep_eq  = ep_eq.rename(columns={"Start Date":"Date","Event":"Event Info"})
+            # Merge on Date (formatted) and Event Info
+            hist["Date_str"] = hist["Date"].dt.strftime("%d-%b-%Y")
+            hist_merged = hist.merge(
+                ep_eq.rename(columns={"Date":"Date_str"}),
+                on=["Date_str","Event Info"], how="left"
+            )
+            # Keep only Days Open column alongside date and info
+            display_hist = hist_merged[["Date","Event Info","Days Open"]].copy()
+            display_hist["Date"] = display_hist["Date"].dt.strftime("%d-%b-%Y")
+            st.dataframe(display_hist, use_container_width=True, height=260)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
@@ -999,21 +1012,25 @@ elif page == "EventAnalysis":
             st.markdown('<div class="no-data-msg">No episodes found for this event.</div>',
                         unsafe_allow_html=True)
         else:
-            display_df = ep_df.reset_index(drop=True)
+            display_df = ep_df.drop(columns=["Shifts Open"], errors="ignore").reset_index(drop=True)
 
             def color_days(val):
-                if val <= 1:   return "background-color:#d1fae5; color:#064e3b;"
-                elif val <= 3: return "background-color:#fef9c3; color:#713f12;"
-                elif val <= 7: return "background-color:#fed7aa; color:#7c2d12;"
-                else:          return "background-color:#fecaca; color:#7f1d1d;"
+                try:
+                    v = float(val)
+                    if v <= 1:   return "background-color:#d1fae5; color:#064e3b;"
+                    elif v <= 3: return "background-color:#fef9c3; color:#713f12;"
+                    elif v <= 7: return "background-color:#fed7aa; color:#7c2d12;"
+                    else:        return "background-color:#fecaca; color:#7f1d1d;"
+                except:
+                    return ""
 
-            styled = (
-                display_df.style
-                .applymap(color_days, subset=["Days Open"])
-                .format({"Days Open": "{:.1f}", "Shifts Open": "{:.0f}"})
-                .set_properties(**{"font-family":"Times New Roman, serif","font-size":"11px"})
-            )
-            st.dataframe(styled, use_container_width=True, height=260)
+            styler = display_df.style.format({"Days Open": "{:.1f}"})
+            if "Days Open" in display_df.columns:
+                try:
+                    styler = styler.map(color_days, subset=["Days Open"])
+                except AttributeError:
+                    styler = styler.applymap(color_days, subset=["Days Open"])
+            st.dataframe(styler, use_container_width=True, height=260)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
