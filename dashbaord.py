@@ -354,6 +354,20 @@ def make_colors(events, cmap):
 # ─────────────────────────────────────────────────
 # LOAD DATA
 # ─────────────────────────────────────────────────
+def _binarise(df, event_cols):
+    """
+    For each event column:
+      - create as 0 if missing from CSV
+      - coerce to numeric, fill NaN with 0
+      - CLAMP to binary 0/1  (classifier may write counts >1; any value >=1 becomes 1)
+    This is the single place that converts raw classifier output to binary flags.
+    """
+    for c in event_cols:
+        if c not in df.columns:
+            df[c] = 0
+        df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).clip(upper=1).astype(int)
+    return df
+
 @st.cache_data
 def load_pump():
     df = pd.read_csv("classified_output.csv")
@@ -362,15 +376,16 @@ def load_pump():
     df["shift"]    = df["shift"].str.strip().replace({"Days":"Day","Nights":"Night"})
     df["month_dt"] = df["date"].dt.to_period("M").dt.to_timestamp()
     df["month"]    = df["month_dt"].dt.strftime("%B-%Y")
-    # Only initialise the exact events defined in PUMP_ALL_EVENTS — nothing else
-    for c in PUMP_ALL_EVENTS:
-        if c not in df.columns: df[c] = 0
-        df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
+    df = _binarise(df, PUMP_ALL_EVENTS)
+    # Drop every CSV column not needed by the dashboard
+    keep = ["pump","pump_info","date","shift","month_dt","month"] + PUMP_ALL_EVENTS
+    df = df[[c for c in keep if c in df.columns]]
     return df
 
 @st.cache_data
 def load_exchanger():
     df = pd.read_csv("exchanger_classified_final.csv")
+    # Drop bracketed meta-columns the classifier may have written
     df = df[[c for c in df.columns if not c.startswith("[")]]
     df["shift"]    = df["shift"].str.strip().replace({"Days":"Day","Nights":"Night"})
     df["date"]     = pd.to_datetime(df["date"], errors="coerce")
@@ -378,10 +393,10 @@ def load_exchanger():
     df["month_dt"] = df["date"].dt.to_period("M").dt.to_timestamp()
     df["month"]    = df["month_dt"].dt.strftime("%B-%Y")
     df["is_cw"]    = df["exchanger"].apply(is_cw)
-    # Only initialise the exact events defined in EXCH_ALL_EVENTS — nothing else
-    for c in EXCH_ALL_EVENTS:
-        if c not in df.columns: df[c] = 0
-        df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
+    df = _binarise(df, EXCH_ALL_EVENTS)
+    # Drop every CSV column not needed by the dashboard
+    keep = ["exchanger","exchanger_info","date","shift","month_dt","month","is_cw"] + EXCH_ALL_EVENTS
+    df = df[[c for c in keep if c in df.columns]]
     return df
 
 @st.cache_data
