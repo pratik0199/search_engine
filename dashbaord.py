@@ -67,7 +67,7 @@ div[data-testid="stSelectbox"] label {
     font-size: 11px !important; font-weight: 700 !important;
     color: #1e293b !important; margin-bottom: 1px !important;
 }
-.kpi-row { display:flex; gap:40px; margin-bottom:0px; margin-top:0px; }
+.kpi-row { display:flex; gap:60px; margin-bottom:0px; margin-top:0px; }
 .kpi-card {
     flex:1; background:#f8fafc; border:1.5px solid #1e293b; border-left:3px solid #1e293b;
     border-radius:5px; padding:2px 6px 2px 6px; min-width:0;
