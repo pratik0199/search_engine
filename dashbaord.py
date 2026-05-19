@@ -451,7 +451,7 @@ def render_kpi(ep_df, months_labels, cw_filter="All"):
       <div class="kpi-card c1">
         <div class="kpi-label">Total Episodes</div>
         <div class="kpi-value">{total_ev:,}</div>
-        <div class="kpi-sub">All periods combined</div>
+        <div class="kpi-sub">Unique jobs created</div>
       </div>
       <div class="kpi-card c2">
         <div class="kpi-label">Avg / Month</div>
