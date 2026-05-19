@@ -23,7 +23,7 @@ div[data-testid="column"] { padding: 0 3px !important; }
 div.stButton > button {
     width: 200%;
     border-radius: 4px;
-    height: 26px !important;
+    height: 30px !important;
     min-height: 28px !important;
     font-weight: 700;
     font-size: 20px;
