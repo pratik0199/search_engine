@@ -21,12 +21,12 @@ div[data-testid="stVerticalBlock"] > div { gap: 0rem !important; }
 div[data-testid="stHorizontalBlock"] { margin-top: 0 !important; margin-bottom: 0 !important; }
 div[data-testid="column"] { padding: 0 3px !important; }
 div.stButton > button {
-    width: 400%;
+    width: 200%;
     border-radius: 4px;
     height: 26px !important;
     min-height: 28px !important;
     font-weight: 700;
-    font-size: 18px;
+    font-size: 20px;
     background-color: #1e293b;
     border: 1px solid #334155;
     color: white !important;
