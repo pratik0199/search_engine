@@ -21,7 +21,7 @@ div[data-testid="stVerticalBlock"] > div { gap: 0rem !important; }
 div[data-testid="stHorizontalBlock"] { margin-top: 0 !important; margin-bottom: 0 !important; }
 div[data-testid="column"] { padding: 0 3px !important; }
 div.stButton > button {
-    width: 200%;
+    width: 400%;
     border-radius: 4px;
     height: 26px !important;
     min-height: 28px !important;
