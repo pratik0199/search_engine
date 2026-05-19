@@ -857,7 +857,7 @@ elif page == "EventAnalysis":
                 elif val <= 7: return "background-color:#fed7aa; color:#7c2d12;"
                 else:          return "background-color:#fecaca; color:#7f1d1d;"
             styled = (display_df.style
-                      .applymap(color_days, subset=["Days Open"])
+                      .map(color_days, subset=["Days Open"])
                       .format({"Days Open": "{:.1f}"}))
             st.dataframe(styled, use_container_width=True, height=260)
         st.markdown('</div>', unsafe_allow_html=True)
